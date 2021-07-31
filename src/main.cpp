@@ -1,42 +1,20 @@
 #include <imgui.h>
 
-#include <Application.hpp>
-#include <Layer.hpp>
+// C++ system headers
 #include <map>
 #include <sstream>
 #include <vector>
 
+//
+#include <Application.hpp>
+#include <Layer.hpp>
+#include <Nodes/Actuator.hpp>
+
 static Application app;
 
-enum NodeType { NONE = 0, ACTUATOR };
-
-struct Node {
-  uint32_t nodeID;
-  NodeType type;
-
-  Node() {}
-  Node(uint32_t _nodeID, NodeType type)
-      : nodeID(_nodeID), type(NodeType::NONE) {}
-  Node(uint32_t _nodeID) : Node(_nodeID, NodeType::NONE) {}
-
-  virtual ~Node() = default;
-
-  virtual std::string ToString() {
-    std::stringstream ss;
-    ss << "NodeID: " << std::to_string(nodeID);
-
-    return ss.str();
-  }
-};
-
-struct Actuator : public Node {};
-
-class NodeLayer : public Layer {
+class ActuatorListLayer : public Layer {
  public:
-  NodeLayer() {
-    Node a(0);
-    nodes[0] = a;
-  };
+  ActuatorListLayer(){};
 
   void OnUpdate() override {
     ImGui::ShowDemoWindow();
@@ -45,29 +23,27 @@ class NodeLayer : public Layer {
 
     if (ImGui::Button("Add Node")) ImGui::OpenPopup("Add Node");
 
-    // ========= Add Node Modal ====== //
+    ErrorPopup();
+    AddNodePopup();
+    DrawListBox();
+
+    ImGui::End();
+  }
+
+  void AddNodePopup() {
     if (ImGui::BeginPopupModal("Add Node", nullptr,
                                ImGuiWindowFlags_AlwaysAutoResize)) {
-      int32_t id = 0;
-      ImGui::InputInt("NodeID", &id);
-
-      const char *items = {"ACTUATOR \0"};
-      int currentItem = 0;
-      ImGui::Combo("Node Type", &currentItem, "ACTUATOR\0");
+      ImGui::InputInt("NodeID", &newNodeID);
 
       if (ImGui::Button("Add", ImVec2(120, 0))) {
         // Verify then add the node
-        if (nodes.find(id) == nodes.end()) {
-          Node n(id, NodeType::ACTUATOR);
-          nodes[id] = n;
+        if (actuators.find(newNodeID) == actuators.end()) {
+          Actuator a(newNodeID);
+          actuators[newNodeID] = a;
           ImGui::CloseCurrentPopup();
+          newNodeID = 0;
         } else {
-          ImGui::OpenPopup("Error");
-
-          if (ImGui::BeginPopup("Error")) {
-            ImGui::Text("Failed to Add Node");
-            ImGui::EndPopup();
-          }
+          ImGui::OpenPopup("AddActuatorError");
         }
       }
 
@@ -77,30 +53,44 @@ class NodeLayer : public Layer {
 
       ImGui::EndPopup();
     }
+  }
 
-    // ========= Node List box ======= //
+  void ErrorPopup() {
+    bool open = true;
+    if (ImGui::BeginPopupModal("AddActuatorError", &open)) {
+      ImGui::Text("Failed to Add Node");
+      ImGui::EndPopup();
+    }
+  }
+
+  void DrawListBox() {
     if (ImGui::BeginListBox(
-            "", ImVec2(-FLT_MIN,
-                       nodes.size() * ImGui::GetTextLineHeightWithSpacing()))) {
-      for (int i = 0; i < nodes.size(); i++) {
-        const bool isSelected = (currentIndex == i);
-        ImGui::Selectable(nodes[i].ToString().c_str(), isSelected);
+            "", ImVec2(-FLT_MIN, actuators.size() *
+                                         ImGui::GetTextLineHeightWithSpacing() +
+                                     10))) {
+      int index = 0;
+      for (auto [k, v] : actuators) {
+        const bool isSelected = (currentlySelected == index);
+        if (ImGui::Selectable(v.ToString().c_str(), isSelected))
+          currentlySelected = index;
 
         if (isSelected) ImGui::SetItemDefaultFocus();
+
+        index++;
       }
 
       ImGui::EndListBox();
     }
-
-    ImGui::End();
   }
 
  private:
-  int currentIndex = 0;
-  std::map<uint32_t, Node> nodes;
+  int32_t newNodeID = 0;
+
+  int currentlySelected = 0;
+  std::map<uint32_t, Actuator> actuators;
 };
 
 int main() {
-  app.PushLayer(new NodeLayer());
+  app.PushLayer(new ActuatorListLayer());
   app.MainLoop();
 }

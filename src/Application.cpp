@@ -44,21 +44,6 @@ void Application::MainLoop() {
   }
 }
 
-void Application::OnEvent(Event &e) {
-  EventDispatcher dispatcher(e);
-  dispatcher.Dispatch<WindowCloseEvent>(
-      [this](WindowCloseEvent &e) { running = false; });
-
-  dispatcher.Dispatch<KeyPressedEvent>(
-      BIND_EVENT_CB(Application::OnKeyPressedEvent));
-  dispatcher.Dispatch<KeyReleasedEvent>(
-      BIND_EVENT_CB(Application::OnKeyReleasedEvent));
-  dispatcher.Dispatch<KeyTypedEvent>(
-      BIND_EVENT_CB(Application::OnKeyTypedEvent));
-}
-
-void Application::PushLayer(Layer *layer) { layerStack.emplace_back(layer); }
-
 void Application::DrawDockSpace() {
   ImGuiWindowFlags windowFlags =
       ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
@@ -82,27 +67,10 @@ void Application::DrawDockSpace() {
   ImGui::End();
 }
 
-void Application::OnKeyTypedEvent(KeyTypedEvent &e) {
-  ImGuiIO &io = ImGui::GetIO();
-  io.AddInputCharactersUTF8(e.GetKey());
-}
+void Application::PushLayer(Layer *layer) { layerStack.emplace_back(layer); }
 
-void Application::OnKeyPressedEvent(KeyPressedEvent &e) {
-  ImGuiIO &io = ImGui::GetIO();
-  io.KeysDown[e.GetKeyCode()] = true;
-  io.KeyCtrl =
-      io.KeysDown[SDL_SCANCODE_LCTRL] || io.KeysDown[SDL_SCANCODE_RCTRL];
-  io.KeyAlt = io.KeysDown[SDL_SCANCODE_LALT] || io.KeysDown[SDL_SCANCODE_RALT];
-  io.KeyShift =
-      io.KeysDown[SDL_SCANCODE_LSHIFT] || io.KeysDown[SDL_SCANCODE_RSHIFT];
-}
-
-void Application::OnKeyReleasedEvent(KeyReleasedEvent &e) {
-  ImGuiIO &io = ImGui::GetIO();
-  io.KeysDown[e.GetKeyCode()] = false;
-  io.KeyCtrl =
-      io.KeysDown[SDL_SCANCODE_LCTRL] || io.KeysDown[SDL_SCANCODE_RCTRL];
-  io.KeyAlt = io.KeysDown[SDL_SCANCODE_LALT] || io.KeysDown[SDL_SCANCODE_RALT];
-  io.KeyShift =
-      io.KeysDown[SDL_SCANCODE_LSHIFT] || io.KeysDown[SDL_SCANCODE_RSHIFT];
+void Application::OnEvent(Event &e) {
+  EventDispatcher dispatcher(e);
+  dispatcher.Dispatch<WindowCloseEvent>(
+      [this](WindowCloseEvent &e) { running = false; });
 }

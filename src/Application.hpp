@@ -22,10 +22,6 @@ class Application {
  private:
   void DrawDockSpace();
 
-  void OnKeyTypedEvent(KeyTypedEvent &e);
-  void OnKeyPressedEvent(KeyPressedEvent &e);
-  void OnKeyReleasedEvent(KeyReleasedEvent &e);
-
  private:
   bool running = true;
   Window window;

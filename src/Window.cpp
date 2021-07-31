@@ -1,7 +1,9 @@
 #include <GL/glew.h>
+#include <imgui_impl_sdl.h>
 
 #include <Events/ApplicationEvents.hpp>
 #include <Events/KeyboardEvents.hpp>
+#include <Events/MouseEvent.hpp>
 #include <Window.hpp>
 
 Window::Window() {
@@ -38,7 +40,6 @@ void Window::Update() {
             // TODO(tyler) Handle resize;
             // windowData.Width = e.window.data1;
             // windowData.Height = e.window.data2;
-
             WindowResizeEvent event(e.window.data1, e.window.data2);
             OnEventCallback(event);
             break;
@@ -66,32 +67,33 @@ void Window::Update() {
         OnEventCallback(event);
         break;
       }
-        // case SDL_MOUSEMOTION: {
-        //   MouseMovedEvent event(e.motion.x, e.motion.y);
-        //   windowData.callback(event);
-        //   break;
-        // }
-        // case SDL_MOUSEWHEEL: {
-        //   MouseScrolledEvent event(e.wheel.x, e.wheel.y);
-        //   windowData.callback(event);
-        //   break;
-        // }
-        // case SDL_MOUSEBUTTONUP: {
-        //   MouseButtonReleasedEvent event(e.button.button - 1);
-        //   windowData.callback(event);
-        //   break;
-        // }
-        // case SDL_MOUSEBUTTONDOWN: {
-        //   MouseButtonPressedEvent event(e.button.button - 1);
-        //   windowData.callback(event);
-        //   break;
-        // }
-        // case SDL_QUIT: {
-        //   WindowCloseEvent event;
-        //   windowData.callback(event);
-        //   break;
-        // }
+      case SDL_MOUSEMOTION: {
+        MouseMovedEvent event(e.motion.x, e.motion.y);
+        OnEventCallback(event);
+        break;
+      }
+      case SDL_MOUSEWHEEL: {
+        MouseScrolledEvent event(e.wheel.x, e.wheel.y);
+        OnEventCallback(event);
+        break;
+      }
+      case SDL_MOUSEBUTTONUP: {
+        MouseButtonReleasedEvent event(e.button.button - 1);
+        OnEventCallback(event);
+        break;
+      }
+      case SDL_MOUSEBUTTONDOWN: {
+        MouseButtonPressedEvent event(e.button.button - 1);
+        OnEventCallback(event);
+        break;
+      }
+      case SDL_QUIT: {
+        WindowCloseEvent event;
+        OnEventCallback(event);
+        break;
+      }
     }
+    ImGui_ImplSDL2_ProcessEvent(&e);
   }
 
   SDL_GL_SwapWindow(window);

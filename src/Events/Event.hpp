@@ -7,13 +7,17 @@ enum class EventType {
   WindowResize,
   KeyPressed,
   KeyReleased,
-  KeyTyped
+  KeyTyped,
+  MouseMoved,
+  MouseScrolled,
+  MouseButtonPressed,
+  MouseButtonReleased
 };
 
 class Event {
   friend class EventDispatcher;
 
-public:
+ public:
   virtual ~Event() = default;
 
   virtual EventType GetEventType() const = 0;
@@ -22,16 +26,17 @@ public:
 class EventDispatcher {
   friend class Event;
 
-public:
+ public:
   explicit EventDispatcher(Event &event) : event(event) {}
 
-  template <typename T, typename F> void Dispatch(const F &func) {
+  template <typename T, typename F>
+  void Dispatch(const F &func) {
     if (event.GetEventType() == T::GetStaticType())
       func(static_cast<T &>(event));
   }
 
-private:
+ private:
   Event &event;
 };
 
-#endif // EVENT_HPP_
+#endif  // EVENT_HPP_
