@@ -1,12 +1,16 @@
 #ifndef APPLICATION_HPP_
 #define APPLICATION_HPP_
 
+// C++ system headers
+#include <memory>
+#include <vector>
+// ==================
+
 #include <Events/ApplicationEvents.hpp>
 #include <Events/Event.hpp>
 #include <Events/KeyboardEvents.hpp>
 #include <Layer.hpp>
 #include <Window.hpp>
-#include <vector>
 
 class Application {
  public:
@@ -26,7 +30,7 @@ class Application {
   bool running = true;
   Window window;
 
-  std::vector<Layer *> layerStack;
+  std::vector<std::shared_ptr<Layer>> layerStack;
 };
 
 #endif  // APPLICATION_HPP_

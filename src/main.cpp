@@ -1,9 +1,15 @@
 #include <imgui.h>
 
 // C++ system headers
+#include <filesystem>
+#include <fstream>
 #include <map>
+#include <ostream>
 #include <sstream>
 #include <vector>
+
+// C++ libraries
+#include <nlohmann/json.hpp>
 
 //
 #include <Application.hpp>
@@ -14,7 +20,24 @@ static Application app;
 
 class ActuatorListLayer : public Layer {
  public:
-  ActuatorListLayer(){};
+  ActuatorListLayer() {
+    // Get Actuator list from file
+    std::filesystem::path f{"guidebolt.config"};
+    if (std::filesystem::exists(f)) {
+      std::ifstream i("guidebolt.config", std::ios::in);
+      nlohmann::json j;
+      i >> j;
+      actuators = j.get<std::map<uint32_t, Actuator>>();
+      i.close();
+    }
+  }
+
+  ~ActuatorListLayer() {
+    std::ofstream o("guidebolt.config", std::ios::out);
+    nlohmann::json j = actuators;
+    o << j << std::endl;
+    o.close();
+  }
 
   void OnUpdate() override {
     ImGui::ShowDemoWindow();

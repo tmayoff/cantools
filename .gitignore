@@ -4,3 +4,5 @@ subprojects/*
 !subprojects/*.wrap
 
 imgui.ini
+
+*.config

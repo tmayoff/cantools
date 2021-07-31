@@ -5,7 +5,12 @@
 #include <sstream>
 #include <string>
 
+//
+#include <nlohmann/json.hpp>
+
 struct Actuator {
+  NLOHMANN_DEFINE_TYPE_INTRUSIVE(Actuator, nodeID);
+
   uint32_t nodeID;
 
   Actuator() {}
