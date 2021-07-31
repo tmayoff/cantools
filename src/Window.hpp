@@ -5,7 +5,7 @@
 
 #include <functional>
 
-#include <Event.hpp>
+#include <Events/Event.hpp>
 
 typedef std::function<void(Event &)> EventCallback;
 

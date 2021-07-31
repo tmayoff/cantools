@@ -1,7 +1,14 @@
 #ifndef EVENT_HPP_
 #define EVENT_HPP_
 
-enum class EventType { NONE = 0, WINDOW_CLOSE };
+enum class EventType {
+  NONE = 0,
+  WindowClose,
+  WindowResize,
+  KeyPressed,
+  KeyReleased,
+  KeyTyped
+};
 
 class Event {
   friend class EventDispatcher;
@@ -25,12 +32,6 @@ public:
 
 private:
   Event &event;
-};
-
-class WindowCloseEvent : public Event {
-public:
-  EventType GetEventType() const override { return GetStaticType(); }
-  static EventType GetStaticType() { return EventType::WINDOW_CLOSE; }
 };
 
 #endif // EVENT_HPP_

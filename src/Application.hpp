@@ -1,11 +1,15 @@
 #ifndef APPLICATION_HPP_
 #define APPLICATION_HPP_
 
-#include <Event.hpp>
+#include <Events/ApplicationEvents.hpp>
+#include <Events/Event.hpp>
+#include <Events/KeyboardEvents.hpp>
+#include <Layer.hpp>
 #include <Window.hpp>
+#include <vector>
 
 class Application {
-public:
+ public:
   Application();
   ~Application();
 
@@ -13,13 +17,20 @@ public:
 
   void OnEvent(Event &e);
 
-private:
+  void PushLayer(Layer *layer);
+
+ private:
   void DrawDockSpace();
 
-private:
-  bool running = true;
+  void OnKeyTypedEvent(KeyTypedEvent &e);
+  void OnKeyPressedEvent(KeyPressedEvent &e);
+  void OnKeyReleasedEvent(KeyReleasedEvent &e);
 
+ private:
+  bool running = true;
   Window window;
+
+  std::vector<Layer *> layerStack;
 };
 
-#endif // APPLICATION_HPP_
+#endif  // APPLICATION_HPP_
