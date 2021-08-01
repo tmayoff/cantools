@@ -9,11 +9,12 @@ imgui_dep = imgui_proj.get_variable('imgui_dep')
 nlohmann_proj = subproject('nlohmann_json')
 nlohmann_dep = nlohmann_proj.get_variable('nlohmann_json_dep')
 
-sdl  = dependency('SDL2', required: true)
-glew = dependency('glew', required: true)
+threads = dependency('threads', required: true)
+sdl    = dependency('SDL2', required: true)
+glew   = dependency('glew', required: true)
 
 inc = include_directories('src/')
 subdir('src')
 
-deps = [imgui_dep, nlohmann_dep, sdl, glew]
+deps = [threads, imgui_dep, nlohmann_dep, sdl, glew]
 exe = executable('cantools', sources, include_directories: inc, dependencies: deps, install : true)

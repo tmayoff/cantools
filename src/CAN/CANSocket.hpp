@@ -23,10 +23,11 @@
 #include <vector>
 
 // Other headers
-#include <CAN.hpp>
+#include <CAN/CAN.hpp>
 
 class CANSocket {
  public:
+  CANSocket() {}
   explicit CANSocket(std::string interfaceName);
   ~CANSocket();
 

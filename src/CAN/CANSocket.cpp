@@ -9,7 +9,7 @@
  *
  */
 
-#include <CANSocket.hpp>
+#include <CAN/CANSocket.hpp>
 
 // C system headers
 #include <errno.h>
@@ -68,6 +68,7 @@ CANSocket::~CANSocket() {
 }
 
 void CANSocket::Close() {
+  opened = false;
   shutdown(sockfd, SHUT_RDWR);
   close(sockfd);
 }
