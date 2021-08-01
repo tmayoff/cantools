@@ -47,8 +47,10 @@ struct Actuator {
     upper.emplace(upper.begin(), nodeID);
     upper.emplace(upper.begin(), CAN::Intents::SET_LIMIT);
 
+    SetTorque(false);
     CANQueue::GetInstance().Queue({0x1F4, lower});
     CANQueue::GetInstance().Queue({0x1F4, upper});
+    SetTorque(true);
   }
 
   void SetTorque(bool enabled) {
