@@ -40,8 +40,6 @@ class ActuatorListLayer : public Layer {
   }
 
   void OnUpdate() override {
-    ImGui::ShowDemoWindow();
-
     ImGui::Begin("Actuators");
 
     if (ImGui::Button("Add Actuator")) ImGui::OpenPopup("Add Actuator");
@@ -60,8 +58,14 @@ class ActuatorListLayer : public Layer {
       const float controlWidth = 350;
 
       ImGui::Text("Selected Node:  %s", actuator.ToString().c_str());
+
+      ImGui::Checkbox("Clamp Position to Limits", &clamp);
+
+      float min = clamp?actuator.lowerLimit : -180;
+      float max = clamp?actuator.upperLimit : 180;
+
       ImGui::SetNextItemWidth(controlWidth);
-      ImGui::SliderFloat("Position", &actuator.position, -180, 180);
+      ImGui::SliderFloat("Position", &actuator.position, min, max);
 
       ImGui::SetNextItemWidth(controlWidth);
       ImGui::DragFloat("Lower Limit", &actuator.lowerLimit, 1.0f, -180, 0,
@@ -140,6 +144,8 @@ class ActuatorListLayer : public Layer {
   }
 
  private:
+  bool clamp;
+
   int32_t newNodeID = 0;
 
   int currentlySelected = 0;

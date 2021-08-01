@@ -25,8 +25,8 @@ struct Actuator {
 
   float position = 0;
 
-  float lowerLimit = 0;
-  float upperLimit = 0;
+  float lowerLimit = -180;
+  float upperLimit = 180;
 
   Actuator() {}
   Actuator(uint32_t _nodeID) : nodeID(_nodeID) {}
