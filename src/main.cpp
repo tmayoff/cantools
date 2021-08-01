@@ -30,6 +30,10 @@ class ActuatorListLayer : public Layer {
       actuators = j.get<std::map<uint32_t, Actuator>>();
       i.close();
     }
+
+    // Set CAN Event listener
+    CANQueue::GetInstance().SetCANEventCallback(
+        std::bind(&ActuatorListLayer::AddCANDump, this, std::placeholders::_1));
   }
 
   ~ActuatorListLayer() {
@@ -50,10 +54,51 @@ class ActuatorListLayer : public Layer {
 
     ImGui::End();
 
+    ActuatorEditor();
+
+    // CAN Dump
+
+    ImGui::ShowDemoWindow();
+
+    ImGui::Begin("CAN Dump");
+
+    const char* bufStart = canDumpBuffer.begin();
+    const char* bufEnd = canDumpBuffer.end();
+    ImGuiListClipper clipper;
+    clipper.Begin(LineOffsets.Size);
+    while (clipper.Step()) {
+      for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
+        const char* lineStart = bufStart + LineOffsets[i];
+        const char* lineEnd = (i + 1 < LineOffsets.Size)
+                                  ? (bufStart + LineOffsets[i + 1] - 1)
+                                  : bufEnd;
+        ImGui::TextUnformatted(lineStart, lineEnd);
+      }
+    }
+    clipper.End();
+
+    if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+      ImGui::SetScrollHereY(1.0f);
+
+    ImGui::End();
+  }
+
+  void AddCANDump(CAN::Data msg) {
+    std::stringstream ss;
+
+    // ss << "NodeID: "
+    //    << std::to_string(msg.nodeID) <<
+
+    int oldSize = canDumpBuffer.size();
+
+    // canDumpBuffer.append();
+  }
+
+  void ActuatorEditor() {
     ImGui::Begin("Editor");
 
     if (actuators.find(currentlySelected) != actuators.end()) {
-      Actuator &actuator = actuators[currentlySelected];
+      Actuator& actuator = actuators[currentlySelected];
 
       const float controlWidth = 350;
 
@@ -61,8 +106,8 @@ class ActuatorListLayer : public Layer {
 
       ImGui::Checkbox("Clamp Position to Limits", &clamp);
 
-      float min = clamp?actuator.lowerLimit : -180;
-      float max = clamp?actuator.upperLimit : 180;
+      float min = clamp ? actuator.lowerLimit : -180;
+      float max = clamp ? actuator.upperLimit : 180;
 
       ImGui::SetNextItemWidth(controlWidth);
       ImGui::SliderFloat("Position", &actuator.position, min, max);
@@ -144,10 +189,15 @@ class ActuatorListLayer : public Layer {
   }
 
  private:
-  bool clamp;
+  // CAN Dump
+  ImGuiTextBuffer canDumpBuffer;
+  ImVector<int> LineOffsets;
 
+  //  New Actuator
   int32_t newNodeID = 0;
 
+  // Editor
+  bool clamp;
   int currentlySelected = 0;
   std::map<uint32_t, Actuator> actuators;
 };

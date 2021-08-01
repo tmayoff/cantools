@@ -17,6 +17,8 @@ CANQueue::~CANQueue() {
   if (readThread.joinable()) readThread.join();
 }
 
+void CANQueue::SetCANEventCallback(CANEventCallback cb) { OnCANReceive = cb; }
+
 void CANQueue::Queue(CAN::Data data) { canQueue.push(data); }
 
 void CANQueue::SendLoop() {
@@ -33,8 +35,9 @@ void CANQueue::ReadLoop() {
   while (socket.opened) {
     try {
       auto d = socket.Recv();
+      if (OnCANReceive) OnCANReceive(d);
     } catch (std::exception &e) {
-      printf("%s\n", e.what());
+      // printf("%s\n", e.what());
     }
   }
 }

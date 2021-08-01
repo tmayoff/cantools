@@ -63,8 +63,8 @@ CANSocket::CANSocket(std::string interfaceName) {
 }
 
 CANSocket::~CANSocket() {
-  Close();
   opened = false;
+  Close();
 }
 
 void CANSocket::Close() {
@@ -74,6 +74,8 @@ void CANSocket::Close() {
 }
 
 void CANSocket::Send(unsigned int id, std::vector<uint8_t> data) {
+  if (!opened) throw SocketExceptions::NotListeningException();
+
   struct can_frame frame = {};
   frame.can_id = id;
   if (data.size() == 0) frame.can_id |= CAN_RTR_FLAG;
@@ -89,6 +91,8 @@ void CANSocket::Send(unsigned int id, std::vector<uint8_t> data) {
 }
 
 void CANSocket::SendFD(unsigned int id, std::vector<uint8_t> data) {
+  if (!opened) throw SocketExceptions::NotListeningException();
+
   struct canfd_frame frame = {};
   frame.can_id = id;
   if (data.size() == 0) frame.can_id |= CAN_RTR_FLAG;
@@ -102,6 +106,8 @@ void CANSocket::SendFD(unsigned int id, std::vector<uint8_t> data) {
 }
 
 CAN::Data CANSocket::Recv() {
+  if (!opened) throw SocketExceptions::NotListeningException();
+
   int numBytes;
   struct can_frame frame;
 

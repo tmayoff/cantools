@@ -2,6 +2,7 @@
 #define CANQUEUE_HPP_
 
 // C++ system headers
+#include <functional>
 #include <queue>
 #include <thread>
 
@@ -10,12 +11,15 @@
 #include <CAN/CANSocket.hpp>
 #include <Singleton.hpp>
 
-class CANQueue : public Singleton<CANQueue> {
+typedef std::function<void(CAN::Data)> CANEventCallback;
+typedef class CANQueue : public Singleton<CANQueue> {
   friend class Singleton<CANQueue>;
 
  public:
   CANQueue();
   ~CANQueue();
+
+  void SetCANEventCallback(CANEventCallback cb);
 
   void Queue(CAN::Data data);
 
@@ -24,6 +28,8 @@ class CANQueue : public Singleton<CANQueue> {
   void ReadLoop();
 
  private:
+  CANEventCallback OnCANReceive;
+
   bool running;
 
   CANSocket socket;
