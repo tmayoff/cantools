@@ -13,6 +13,9 @@ struct Actuator {
 
   uint32_t nodeID;
 
+  float position;
+  float lastPosition;
+
   Actuator() {}
   Actuator(uint32_t _nodeID) : nodeID(_nodeID) {}
 

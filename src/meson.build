@@ -1,1 +1,1 @@
-sources = files('main.cpp', 'Application.cpp', 'Window.cpp')
+sources = files('main.cpp', 'Application.cpp', 'Window.cpp', 'CANSocket.cpp')

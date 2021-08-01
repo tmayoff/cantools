@@ -1,4 +1,5 @@
 #include <imgui.h>
+#include <unistd.h>
 
 // C++ system headers
 #include <filesystem>
@@ -13,6 +14,7 @@
 
 //
 #include <Application.hpp>
+#include <CANSocket.hpp>
 #include <Layer.hpp>
 #include <Nodes/Actuator.hpp>
 
@@ -39,22 +41,57 @@ class ActuatorListLayer : public Layer {
     o.close();
   }
 
+  int32_t ConvertRange(float num) {
+    float nAngle = num / 180;
+    return nAngle * INT32_MAX;
+  }
+
   void OnUpdate() override {
-    ImGui::ShowDemoWindow();
+    // ImGui::ShowDemoWindow();
 
-    ImGui::Begin("Nodes");
+    ImGui::Begin("Actuators");
 
-    if (ImGui::Button("Add Node")) ImGui::OpenPopup("Add Node");
+    if (ImGui::Button("Add Actuator")) ImGui::OpenPopup("Add Actuator");
 
     ErrorPopup();
-    AddNodePopup();
+    AddActuator();
     DrawListBox();
+
+    ImGui::End();
+
+    ImGui::Begin("Editor");
+
+    auto actuator = actuators[currentlySelected];
+
+    ImGui::Text("Selected Node:  %s",
+                actuators[currentlySelected].ToString().c_str());
+
+    ImGui::SliderFloat("Position", &actuators[currentlySelected].position, -180,
+                       180);
+
+    // Update position
+    if (actuators[currentlySelected].position !=
+        actuators[currentlySelected].lastPosition) {
+      // actuators[currentlySelected].SendNewPosition();
+
+      std::vector<uint8_t> data(sizeof(int32_t));
+      auto val = ConvertRange(actuators[currentlySelected].position);
+      std::memcpy(data.data(), &val, sizeof(int32_t));
+      data.emplace(data.begin(), currentlySelected);
+      data.emplace(data.begin(), CAN::Intents::MOVE);
+
+      socket.Send(0x1F4, data);
+      usleep(10000);
+
+      actuators[currentlySelected].lastPosition =
+          actuators[currentlySelected].position;
+    }
 
     ImGui::End();
   }
 
-  void AddNodePopup() {
-    if (ImGui::BeginPopupModal("Add Node", nullptr,
+  void AddActuator() {
+    if (ImGui::BeginPopupModal("Add Actuator", nullptr,
                                ImGuiWindowFlags_AlwaysAutoResize)) {
       ImGui::InputInt("NodeID", &newNodeID);
 
@@ -91,15 +128,13 @@ class ActuatorListLayer : public Layer {
             "", ImVec2(-FLT_MIN, actuators.size() *
                                          ImGui::GetTextLineHeightWithSpacing() +
                                      10))) {
-      int index = 0;
       for (auto [k, v] : actuators) {
-        const bool isSelected = (currentlySelected == index);
-        if (ImGui::Selectable(v.ToString().c_str(), isSelected))
-          currentlySelected = index;
+        const bool isSelected = (currentlySelected == k);
+        if (ImGui::Selectable(v.ToString().c_str(), isSelected)) {
+          currentlySelected = k;
+        }
 
         if (isSelected) ImGui::SetItemDefaultFocus();
-
-        index++;
       }
 
       ImGui::EndListBox();
@@ -111,6 +146,8 @@ class ActuatorListLayer : public Layer {
 
   int currentlySelected = 0;
   std::map<uint32_t, Actuator> actuators;
+
+  CANSocket socket = CANSocket("can0");
 };
 
 int main() {
