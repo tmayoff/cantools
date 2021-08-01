@@ -21,7 +21,7 @@
 #include <vector>
 
 namespace CAN {
-enum Intents { MOVE = 0x15 };
+enum Intents { SET_LIMIT = 0x07, SET_TORQUE = 0x09, SINGLE_MOVE = 0x15 };
 
 struct Data {
   unsigned int nodeID;

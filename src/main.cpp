@@ -22,9 +22,9 @@ class ActuatorListLayer : public Layer {
  public:
   ActuatorListLayer() {
     // Get Actuator list from file
-    std::filesystem::path f{"guidebolt.config"};
+    std::filesystem::path f{"cantools.json"};
     if (std::filesystem::exists(f)) {
-      std::ifstream i("guidebolt.config", std::ios::in);
+      std::ifstream i("cantools.json", std::ios::in);
       nlohmann::json j;
       i >> j;
       actuators = j.get<std::map<uint32_t, Actuator>>();
@@ -33,14 +33,14 @@ class ActuatorListLayer : public Layer {
   }
 
   ~ActuatorListLayer() {
-    std::ofstream o("guidebolt.config", std::ios::out);
+    std::ofstream o("cantools.json", std::ios::out);
     nlohmann::json j = actuators;
     o << j << std::endl;
     o.close();
   }
 
   void OnUpdate() override {
-    // ImGui::ShowDemoWindow();
+    ImGui::ShowDemoWindow();
 
     ImGui::Begin("Actuators");
 
@@ -54,17 +54,35 @@ class ActuatorListLayer : public Layer {
 
     ImGui::Begin("Editor");
 
-    Actuator &actuator = actuators[currentlySelected];
+    if (actuators.find(currentlySelected) != actuators.end()) {
+      Actuator &actuator = actuators[currentlySelected];
 
-    ImGui::Text("Selected Node:  %s", actuator.ToString().c_str());
-    ImGui::SliderFloat("Position", &actuator.position, -180, 180);
+      const float controlWidth = 350;
 
-    // Update position
-    if (actuator.position != actuator.lastPosition) {
-      actuator.UpdatePhysicalPosition();
+      ImGui::Text("Selected Node:  %s", actuator.ToString().c_str());
+      ImGui::SetNextItemWidth(controlWidth);
+      ImGui::SliderFloat("Position", &actuator.position, -180, 180);
 
-      actuators[currentlySelected].lastPosition =
-          actuators[currentlySelected].position;
+      ImGui::SetNextItemWidth(controlWidth);
+      ImGui::DragFloat("Lower Limit", &actuator.lowerLimit, 1.0f, -180, 0,
+                       "%.3f");
+      ImGui::SameLine();
+      ImGui::SetNextItemWidth(controlWidth);
+      ImGui::DragFloat("Upper Limit", &actuator.upperLimit, 1.0f, 0, 180,
+                       "%.3f");
+
+      actuator.Update();
+
+      if (ImGui::Button("Set Limits")) actuator.SetLimits();
+      ImGui::SameLine();
+      if (ImGui::Button("Enable Torque")) actuator.SetTorque(true);
+      ImGui::SameLine();
+      if (ImGui::Button("Disable Torque")) actuator.SetTorque(false);
+
+      if (ImGui::Button("Delete Actuator")) {
+        actuators.erase(actuators.find(currentlySelected));
+        currentlySelected = actuators.begin()->first;
+      }
     }
 
     ImGui::End();
